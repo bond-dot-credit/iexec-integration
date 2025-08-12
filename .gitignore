@@ -7,3 +7,15 @@ output
 
 # python virtual env
 .venv
+venv/
+.vscode/settings.json
+
+# python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# docs
+CLAUDE.md
