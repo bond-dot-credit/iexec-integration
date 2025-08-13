@@ -1,44 +1,76 @@
 import json
 import os
 import sys
-from pyfiglet import Figlet
 import protected_data
-
-# ⚠️ Your Python code will be run in a python v3.8.3 environment
 
 IEXEC_OUT = os.getenv('IEXEC_OUT')
 
 computed_json = {}
 
 try:
-    messages = []
-
-    args = sys.argv[1:]
-    print(f"Received {len(args)} args")
-    if len(args) > 0:
-        messages.append(" ".join(args))
-
+    print("Starting scoring logic iApp...")
+    
+    # Decrypt integer A from protected data using MEDPRIVATE key
+    used_protected_data = False
     try:
-        # The protected data mock created for the purpose of this Hello World journey
-        # contains an object with a key "secretText" which is a string
-        protected_text = protected_data.getValue('secretText', 'string')
-        messages.append(protected_text)
+        # Attempt to get the encrypted integer A from protected data
+        protected_integer_A = protected_data.getValue('A', 'i128')
+        used_protected_data = True
+        print(f"Successfully decrypted integer A from protected data")
     except Exception as e:
-        print('It seems there is an issue with your protected data:', e)
-
-    # Transform input text into an ASCII Art text
-    txt = f"Hello, {' '.join(messages) if len(messages) > 0 else 'World'}!"
-    ascii_art_text = Figlet().renderText(txt)
-
-    print(ascii_art_text)
-
-    with open(IEXEC_OUT + '/result.txt', 'w') as f:
-        f.write(ascii_art_text)
-    computed_json = {'deterministic-output-path': IEXEC_OUT + '/result.txt'}
+        print('Error decrypting protected data A:', e)
+        # Fallback: use command line argument if protected data fails
+        args = sys.argv[1:]
+        if len(args) > 0:
+            try:
+                protected_integer_A = int(args[0])
+                print(f"Using command line argument A: {protected_integer_A}")
+            except ValueError:
+                raise Exception("No valid integer A found in protected data or arguments")
+        else:
+            raise Exception("No protected data A found and no command line arguments provided")
+    
+    # TEE scoring logic: result = A * 2
+    result = protected_integer_A * 2
+    print(f"Applied scoring logic (A * 2) = {result}")
+    
+    # Create result data structure - hide input if from protected data
+    if used_protected_data:
+        result_data = {
+            "scoring_logic": "A * 2",
+            "result": result,
+            "status": "success",
+            "data_source": "protected_data"
+        }
+        print("Input from protected data - not included in output for security")
+    else:
+        result_data = {
+            "input_A": protected_integer_A,
+            "scoring_logic": "A * 2",
+            "result": result,
+            "status": "success",
+            "data_source": "command_line_args"
+        }
+    
+    # unencrypted result to output file
+    with open(IEXEC_OUT + '/result.json', 'w') as f:
+        json.dump(result_data, f, indent=2)
+    
+    print(f"Result written to output: {result}")
+    computed_json = {'deterministic-output-path': IEXEC_OUT + '/result.json'}
+    
 except Exception as e:
-    print(e)
-    computed_json = {'deterministic-output-path': IEXEC_OUT,
-                     'error-message': 'Oops something went wrong'}
+    print(f"Error in scoring logic: {e}")
+    error_data = {
+        "status": "error",
+        "error_message": str(e)
+    }
+    
+    with open(IEXEC_OUT + '/result.json', 'w') as f:
+        json.dump(error_data, f, indent=2)
+    
+    computed_json = {'deterministic-output-path': IEXEC_OUT + '/result.json',
+                     'error-message': str(e)}
 finally:
     with open(IEXEC_OUT + '/computed.json', 'w') as f:
         json.dump(computed_json, f)

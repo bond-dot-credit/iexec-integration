@@ -1,9 +1,20 @@
-# iApp hello-world
+# Scoring Logic iApp
 
 This project is an iExec Decentralized Confidential Computing serverless
-application leveraging Trusted Execution Environment (TEE).
+application that implements scoring logic using Trusted Execution Environment (TEE).
 
-This project was scaffolded with `iapp init`.
+## Overview
+
+This iApp demonstrates secure scoring logic execution:
+- **Decrypt** integer A from protected data using MEDPRIVATE key via dataProtector
+- **Apply TEE scoring logic**: result = A * 2  
+- **Return unencrypted results** for downstream processing
+
+Key features:
+- Protected data decryption with dataProtector
+- Borsh deserialization for secure data handling
+- Fallback to command line arguments for testing
+- Deterministic scoring logic execution in TEE
 
 - [Quick start](#quick-start)
   - [Prerequisites](#prerequisites)
@@ -47,9 +58,40 @@ on the iApp development framework.
 Use the `iapp test` command to run your app locally and check your app fulfills
 the framework's [requirements for outputs](#iapp-outputs).
 
+#### Test with command line arguments (fallback mode):
 ```sh
-iapp test
+iapp test --args 5
 ```
+
+#### Test with protected data (primary mode):
+```sh
+iapp test --protectedData [mock_name]
+```
+
+#### Example Outputs:
+
+**With command line args** (`iapp test --args 5`):
+```json
+{
+  "input_A": 5,
+  "scoring_logic": "A * 2",
+  "result": 10,
+  "status": "success",
+  "data_source": "command_line_args"
+}
+```
+
+**With protected data** (`iapp test --protectedData [mock_name]`):
+```json
+{
+  "scoring_logic": "A * 2",
+  "result": 10,
+  "status": "success",
+  "data_source": "protected_data"
+}
+```
+
+> 🔒 **Security Note**: When using protected data, the input value `A` is **never exposed** in the output to maintain data confidentiality.
 
 > ℹ️ Use the following **options** with `iapp test` to simulate
 > [inputs](#iapp-inputs):
@@ -114,11 +156,68 @@ iapp run <iapp-address>
   commands (⚠️ this file contains sensitive information such as credentials or
   wallet and should never be committed in a public repository).
 - [src/](./src/) where your code lives when you [develop](#develop) your app.
+  - [src/app.py](./src/app.py) main scoring logic application
+  - [src/protected_data.py](./src/protected_data.py) dataProtector deserializer module for MEDPRIVATE key decryption
 - [Dockerfile](./Dockerfile) how to build your app docker image.
 - [input/](./input/) input directory for your [local tests](#test-locally).
 - [output/](./output/) output directory for your [local tests](#test-locally).
 - [cache/](./cache/) directory contains traces of your past app
   [deployments](#deploy-on-iexec) and [runs](#run-on-iexec).
+- [mock/protectedData/](./mock/protectedData/) mock protected data for testing dataProtector functionality.
+
+## Scoring Logic Implementation
+
+This iApp implements secure scoring logic with the following architecture:
+
+### DataProtector Integration
+
+The application uses **dataProtector** for secure data handling:
+
+1. **Protected Data Decryption**: 
+   - Decrypts integer `A` from protected data using MEDPRIVATE key
+   - Handled by `protected_data.py` dataProtector deserializer module
+   - Uses borsh serialization for secure data parsing
+
+2. **TEE Execution Flow**:
+   ```
+   Encrypted Data (A) → MEDPRIVATE Key → Decrypt → Scoring Logic (A * 2) → Unencrypted Result
+   ```
+
+3. **Input Methods**:
+   - **Primary**: Protected data with encrypted integer A
+   - **Fallback**: Command line arguments for testing
+
+4. **Output Formats**:
+   
+   **Protected Data Mode** (secure):
+   ```json
+   {
+     "scoring_logic": "A * 2", 
+     "result": 10,
+     "status": "success",
+     "data_source": "protected_data"
+   }
+   ```
+   
+   **Fallback Mode** (testing):
+   ```json
+   {
+     "input_A": 5,
+     "scoring_logic": "A * 2", 
+     "result": 10,
+     "status": "success",
+     "data_source": "command_line_args"
+   }
+   ```
+
+### Security Features
+
+- ✅ **TEE Environment**: All computations run in Trusted Execution Environment
+- ✅ **MEDPRIVATE Key**: Secure decryption of protected data
+- ✅ **Deterministic Output**: Same inputs always produce same results
+- ✅ **Input Data Protection**: Protected data inputs are **never exposed** in outputs
+- ✅ **Data Source Tracking**: Clear indication of whether data came from protected or test sources
+- ✅ **Unencrypted Results**: Output available for downstream processing
 
 ## iApp development guidelines
 
