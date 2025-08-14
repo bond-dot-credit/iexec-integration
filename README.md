@@ -158,6 +158,10 @@ iapp run <iapp-address>
 - [src/](./src/) where your code lives when you [develop](#develop) your app.
   - [src/app.py](./src/app.py) main scoring logic application
   - [src/protected_data.py](./src/protected_data.py) dataProtector deserializer module for MEDPRIVATE key decryption
+- [ts-dataprotector/](./ts-dataprotector/) TypeScript implementation for iExec DataProtector integration
+  - [src/protectScoreData.ts](./ts-dataprotector/src/protectScoreData.ts) encrypts and uploads credit score data
+  - [src/grantAccess.ts](./ts-dataprotector/src/grantAccess.ts) manages access permissions for protected data
+  - [src/test.ts](./ts-dataprotector/src/test.ts) comprehensive test suite for DataProtector functionality
 - [Dockerfile](./Dockerfile) how to build your app docker image.
 - [input/](./input/) input directory for your [local tests](#test-locally).
 - [output/](./output/) output directory for your [local tests](#test-locally).
@@ -218,6 +222,215 @@ The application uses **dataProtector** for secure data handling:
 - ✅ **Input Data Protection**: Protected data inputs are **never exposed** in outputs
 - ✅ **Data Source Tracking**: Clear indication of whether data came from protected or test sources
 - ✅ **Unencrypted Results**: Output available for downstream processing
+
+## iExec DataProtector Integration
+
+The project includes a comprehensive TypeScript implementation for managing encrypted credit score data using iExec's DataProtector service. This enables secure storage and controlled access to sensitive agent credit score information.
+
+### Upload & Access Authorization Flow
+
+#### 1. Data Protection (Upload)
+
+The `ScoreDataProtector` class handles encrypted upload of credit score data:
+
+```typescript
+import { ScoreDataProtector } from './ts-dataprotector/src';
+
+const scoreProtector = new ScoreDataProtector();
+
+// Define credit score data structure
+const creditScoreData = {
+  agentId: 'agent_12345',
+  creditScore: 750,
+  timestamp: Date.now(),
+  scoreVersion: '2.1.0',
+  metadata: {
+    model: 'bond_credit_v2',
+    confidence: 0.92,
+    riskCategory: 'low'
+  }
+};
+
+// Encrypt and upload to iExec's decentralized storage
+const protectedData = await scoreProtector.protectCreditScore(
+  creditScoreData,
+  'Agent_12345_CreditScore'
+);
+
+console.log('Protected Data Address:', protectedData.address);
+```
+
+**Key Features:**
+- **Client-side Encryption**: Data is encrypted before upload using iExec's encryption
+- **Immutable Storage**: Data stored on decentralized infrastructure
+- **Ownership Control**: Data owner retains full control over access permissions
+- **Structured Data**: Supports complex credit score objects with metadata
+
+#### 2. Access Authorization (grantAccess)
+
+The system provides flexible access control mechanisms:
+
+##### A. Grant Access to Specific Wallet Address
+
+```typescript
+// Authorize specific user wallet to access the data
+await scoreProtector.grantAccessToScore(
+  protectedData.address,           // Protected data address
+  '0x1234...5678',                // Authorized user wallet
+  '0x9876...4321',                // Authorized app address
+  0,                              // Price per access (0 = free)
+  5                               // Number of accesses allowed
+);
+```
+
+##### B. Grant Access to Specific App ID
+
+```typescript
+// Authorize specific application to process the data
+await scoreProtector.grantAccessToScore(
+  protectedData.address,
+  '0x1234...5678',                // User wallet
+  '0xABCD...EFGH',                // Specific app contract address
+  10,                             // 10 nRLC per access
+  1                               // Single access
+);
+```
+
+##### C. Grant Public Access (Any User)
+
+```typescript
+import { AccessManager } from './ts-dataprotector/src';
+
+const accessManager = new AccessManager();
+
+// Allow any user to access via specific app
+await accessManager.grantPublicAccess(
+  protectedData.address,
+  '0x9876...4321',                // App address
+  5,                              // 5 nRLC per access
+  100                             // 100 total accesses allowed
+);
+```
+
+##### D. Grant Access to Multiple Users
+
+```typescript
+const users = [
+  '0x1111...1111',
+  '0x2222...2222', 
+  '0x3333...3333'
+];
+
+const results = await accessManager.grantAccessToMultipleUsers(
+  protectedData.address,
+  users,
+  '0x9876...4321',                // App address
+  2,                              // 2 nRLC per access
+  3                               // 3 accesses per user
+);
+```
+
+#### 3. Access Control Verification
+
+The system ensures unauthorized entities cannot access protected data:
+
+```typescript
+// Fetch protected data information (metadata only)
+const info = await scoreProtector.getProtectedDataInfo(protectedData.address);
+console.log('Data Name:', info.name);
+console.log('Owner:', info.owner);
+// Note: Actual encrypted data content is not accessible without proper grants
+
+// Revoke access when needed
+await scoreProtector.revokeAccess(
+  protectedData.address,
+  '0x1234...5678',               // User to revoke
+  '0x9876...4321'                // App to revoke
+);
+```
+
+#### 4. Unauthorized Access Prevention
+
+**Built-in Security Measures:**
+- ✅ **Encryption**: Data is encrypted client-side before upload
+- ✅ **Access Control**: Only granted users/apps can process data in TEE
+- ✅ **Zero Knowledge**: Unauthorized parties cannot view data content
+- ✅ **Audit Trail**: All access grants/revokes are recorded on blockchain
+- ✅ **Usage Limits**: Configurable number of accesses per grant
+- ✅ **Pricing Control**: Optional pricing per data access in nRLC
+
+### Quick Start Guide
+
+#### Setup
+
+```bash
+cd ts-dataprotector
+npm install
+cp .env.example .env
+# Edit .env with your wallet details
+```
+
+#### Protect Credit Score Data
+
+```bash
+npm run protect-data
+```
+
+#### Grant Access to Users/Apps
+
+```bash
+npm run grant-access <protected-data-address> <user-address> <app-address> [price] [accesses]
+
+# Examples:
+npm run grant-access 0xABC...123 0x123...456 0x789...012 0 5
+npm run grant-access 0xABC...123 public 0x789...012 10 100
+```
+
+#### Run Tests
+
+```bash
+npm run dev
+# or
+npm test
+```
+
+### Access Control Matrix
+
+| Entity Type | Access Method | Description | Use Case |
+|-------------|---------------|-------------|----------|
+| **Specific User** | `grantAccess(user, app)` | Single wallet + app combination | Individual agent access |
+| **Public Access** | `grantAccess('0x0...0', app)` | Any user via specific app | Public scoring services |
+| **Multiple Users** | `grantAccessToMultipleUsers()` | Batch grant to user list | Team/group access |
+| **Multiple Apps** | `grantAccessToMultipleApps()` | Single user, multiple apps | Cross-platform access |
+| **Unauthorized** | No grant | ❌ Cannot access encrypted data | Security enforcement |
+
+### Data Flow Architecture
+
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   Agent Data    │───▶│  Client-side     │───▶│  iExec Storage  │
+│  (Credit Score) │    │   Encryption     │    │  (Decentralized)│
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+                                                        │
+                                                        ▼
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   Authorized    │◀───│   grantAccess    │◀───│   Data Owner    │
+│   App/User      │    │   (Blockchain)   │    │   (Wallet)      │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+         │
+         ▼
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   TEE Processing│───▶│   Scoring Logic  │───▶│   Results       │
+│   (iExec Worker)│    │   (Python iApp)  │    │   (Unencrypted) │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+```
+
+This integration ensures that:
+1. **Credit score data is encrypted** before leaving the client
+2. **Only authorized entities** can access the data for processing
+3. **Unauthorized users** cannot decrypt or access sensitive information
+4. **Flexible access patterns** support various business use cases
+5. **Audit trail** maintains transparency of data access permissions
 
 ## iApp development guidelines
 
