@@ -1,0 +1,36 @@
+{
+  "name": "scoring-logic-dataprotector",
+  "version": "1.0.0",
+  "description": "iExec DataProtector integration for secure credit score storage",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "setup": "ts-node src/setup.ts",
+    "dev": "ts-node src/testWorkingOnly.ts",
+    "test": "ts-node src/testWorkingOnly.ts",
+    "test-all": "ts-node src/test.ts",
+    "protect-data": "ts-node src/protectScoreData.ts",
+    "protect-only": "ts-node src/protectOnly.ts",
+    "grant-access": "ts-node src/grantAccess.ts"
+  },
+  "dependencies": {
+    "@iexec/dataprotector": "^2.0.0-beta.10",
+    "dotenv": "^17.2.1",
+    "ethers": "^6.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  },
+  "keywords": [
+    "iexec",
+    "dataprotector",
+    "credit-score",
+    "encryption",
+    "tee"
+  ],
+  "author": "Bond.credit",
+  "license": "MIT"
+}
