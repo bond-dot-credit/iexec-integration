@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "ethers": "^6.15.0",
+    "iexec": "^8.18.0"
+  }
+}
