@@ -19,3 +19,7 @@ __pycache__/
 
 # docs
 CLAUDE.md
+
+# macOS
+.DS_Store
+node_modules
