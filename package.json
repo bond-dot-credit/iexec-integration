@@ -1,6 +1,42 @@
 {
+  "name": "iexec-scoring-logic",
+  "version": "1.0.0",
+  "description": "iExec TEE Scoring Logic Application - Decentralized Confidential Computing",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "install:all": "npm install && npm run install:frontend && npm run install:data-protector",
+    "install:frontend": "cd packages/frontend && npm install",
+    "install:data-protector": "cd packages/data-protector && npm install",
+    "build:frontend": "cd packages/frontend && npm run build",
+    "build:data-protector": "cd packages/data-protector && npm run build",
+    "start:frontend": "cd packages/frontend && npm start",
+    "test:tee": "cd packages/deployment && node test-tee-execution.js",
+    "deploy:tee": "cd packages/tee-app && iapp deploy",
+    "protect-data": "cd packages/data-protector && npm run protect",
+    "retrieve-data": "cd packages/data-protector && npm run retrieve",
+    "grant-access": "cd packages/data-protector && npm run grant-access",
+    "clean": "rm -rf packages/*/node_modules packages/*/dist packages/*/build node_modules",
+    "lint": "cd packages/frontend && npm run lint",
+    "typecheck": "cd packages/frontend && npm run typecheck"
+  },
+  "keywords": [
+    "iexec",
+    "tee",
+    "confidential-computing",
+    "blockchain",
+    "scoring-logic",
+    "dataprotector"
+  ],
+  "author": "Bond Credit Team",
+  "license": "MIT",
   "dependencies": {
     "ethers": "^6.15.0",
     "iexec": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0"
   }
 }

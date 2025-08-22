@@ -1,25 +1,69 @@
-# iapp config file may contain secrets
-iapp.config.json
+# Dependencies
+node_modules/
+*/node_modules/
+packages/*/node_modules/
 
-# iapp test directories
-input
-output
+# Build outputs
+build/
+dist/
+*/build/
+*/dist/
+packages/*/build/
+packages/*/dist/
 
-# python virtual env
-.venv
-venv/
-.vscode/settings.json
-
-# python cache files
+# Python
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
+*$py.class
+*.so
 .Python
+venv/
+ENV/
+env/
+packages/tee-app/__pycache__/
+packages/tee-app/venv/
 
-# docs
-CLAUDE.md
+# iExec
+.secret
+cache/
+packages/tee-app/cache/
+packages/tee-app/input/
+packages/tee-app/output/
 
-# macOS
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
 .DS_Store
-node_modules
+Thumbs.db
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Temporary files
+*.tmp
+*.temp
+
+# Package lock files (use npm workspaces)
+package-lock.json
+packages/*/package-lock.json
+
+# Testing
+coverage/
+
+# Sensitive configuration
+packages/tee-app/iapp.config.json
+packages/data-protector/.env

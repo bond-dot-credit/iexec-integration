@@ -1,0 +1,22 @@
+{
+  "name": "scoringlogic-deployment",
+  "version": "1.0.0",
+  "description": "Deployment and testing scripts for iExec TEE scoring logic",
+  "private": true,
+  "scripts": {
+    "test:tee": "node test-tee-execution.js",
+    "clean": "rm -rf node_modules"
+  },
+  "dependencies": {
+    "iexec": "^8.18.0",
+    "ethers": "^6.15.0"
+  },
+  "keywords": [
+    "iexec",
+    "tee",
+    "deployment",
+    "testing"
+  ],
+  "author": "Bond Credit Team",
+  "license": "MIT"
+}
