@@ -46,8 +46,8 @@ export interface NetworkConfig {
 
 // Deployed Contract Addresses (from CLAUDE.md)
 export const DEPLOYED_ADDRESSES = {
-  TEE_APP: '0x1A81494D96543f7382554F5C9692284Ec84AA781', // Updated with enhanced argument handling
-  PROTECTED_DATA: '0xedEE98aA169B6685625c7a8b5bd5C8ece41B4BB6',
+  TEE_APP: '0x5eC82059CbF38C005B73e70220a5192B19E7A12c', // Back to working app
+  PROTECTED_DATA: '0xe5373e8e8fe9df0f82a9fd016da61b57befe6ad9', // Will upload new data in correct format
   NETWORK: 'bellecour'
 } as const;
 

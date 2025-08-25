@@ -159,9 +159,11 @@ export async function uploadFromEnv() {
       : 'medium';
 
     // Read credit score data from environment variables
+    // Note: TEE app expects the key "A" for the integer value
     const scoreData: CreditScoreData = {
       agentId: process.env.AGENT_ID!,
       creditScore: parseInt(process.env.CREDIT_SCORE!),
+      A: parseInt(process.env.CREDIT_SCORE!), // TEE app looks for this key
       timestamp: Date.now(),
       scoreVersion: process.env.SCORE_VERSION || '2.1.0',
       metadata: {

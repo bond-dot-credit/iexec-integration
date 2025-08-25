@@ -267,13 +267,13 @@ class IExecService {
   }
 
   async pollTaskUntilComplete(taskId: string, onUpdate?: (task: TEETaskResult) => void): Promise<TEETaskResult> {
-    const maxPolls = 120; // 10 minutes at 5-second intervals
-    const pollInterval = 5000; // 5 seconds
+    const maxPolls = 180; // 9 minutes at 3-second intervals  
+    const pollInterval = 3000; // 3 seconds
 
-    // Wait a few seconds before starting to poll to allow task to be created
+    // Wait a bit before starting to poll to allow task to be created on blockchain
     if (pollInterval > 0) {
-      console.log('Waiting 3 seconds before starting to poll...');
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      console.log('⏳ Deal created successfully! Waiting 5 seconds for task to be initialized...');
+      await new Promise(resolve => setTimeout(resolve, 5000));
     }
 
     for (let i = 0; i < maxPolls; i++) {

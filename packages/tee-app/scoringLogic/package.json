@@ -1,0 +1,19 @@
+{
+  "name": "scoringlogic-tee-app",
+  "version": "1.0.0",
+  "description": "JavaScript TEE application for secure credit scoring logic execution",
+  "main": "src/app.js",
+  "type": "module",
+  "dependencies": {
+    "@iexec/dataprotector-deserializer": "^0.1.1"
+  },
+  "keywords": [
+    "iexec",
+    "tee",
+    "javascript",
+    "scoring-logic",
+    "dataprotector"
+  ],
+  "author": "Bond Credit Team",
+  "license": "MIT"
+}
